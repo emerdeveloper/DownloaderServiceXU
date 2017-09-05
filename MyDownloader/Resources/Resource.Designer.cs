@@ -60,11 +60,14 @@ namespace MyDownloader
 		public partial class Id
 		{
 			
+			// aapt resource value: 0x7f050002
+			public const int buttonCancel = 2131034114;
+			
 			// aapt resource value: 0x7f050001
-			public const int buttonCancel = 2131034113;
+			public const int buttonStart = 2131034113;
 			
 			// aapt resource value: 0x7f050000
-			public const int buttonStart = 2131034112;
+			public const int progressBar1 = 2131034112;
 			
 			static Id()
 			{
