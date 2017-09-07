@@ -18,6 +18,8 @@ namespace MyDownloader
     public class MyDownloadService : Service
     {
         const string tag = "MyDownloadService";
+        const int NotificationID = 10000;
+        PendingIntent pendingIntent;//pending intent which encapsulates an intent that defines the behavior
         bool isDownloaded;
         bool isCancelled;
 
@@ -41,6 +43,9 @@ namespace MyDownloader
             //MOCK logic
             //int steps = 15;
 
+            //Call the notification and run in foreground
+            StartForeground(NotificationID, GetNotification("Download started"));
+
             Task.Run(() =>
             {
                 for (int i = 0; i < steps && isCancelled == false; i++)
@@ -48,6 +53,8 @@ namespace MyDownloader
                     int percent = 100 * (i + 1) / steps;
                     var msg = String.Format("[{0}] download in progress: {1}% complete", startId, percent);
                     Log.Debug(tag, msg);
+
+                    UpdateNotification(msg);//Set the progress
 
                     Java.Lang.Thread.Sleep(500);
                 }
@@ -73,12 +80,17 @@ namespace MyDownloader
                 Java.Lang.Thread.Sleep(500);
             }*/
 
-            return StartCommandResult.RedeliverIntent;//Restarts with the original intent
+            return StartCommandResult.RedeliverIntent;//Restarts with the original intent
+
         }
 
         public override void OnCreate()
         {
             base.OnCreate();
+
+            var intent = new Intent(this, typeof(MainActivity));
+            pendingIntent = PendingIntent.GetActivity(this, 0, intent, 0);
+
             Toast.MakeText(this, "Service created", ToastLength.Short).Show();
             Log.Debug(tag, "Service created");
         }
@@ -95,5 +107,25 @@ namespace MyDownloader
             Toast.MakeText(this, "Service destroyed", ToastLength.Short).Show();
             Log.Debug(tag, "Service destroyed");
         }
+
+        //create notification
+        public Notification GetNotification(string content) {
+            return new Notification.Builder(this)
+                .SetContentTitle(tag)
+                .SetContentText(content)
+                .SetSmallIcon(Resource.Drawable.icon)
+                .SetContentIntent(pendingIntent)
+                .Build();
+        }
+
+        //method that can be used to update the notification
+        void UpdateNotification(string content)
+        {
+            var notification = GetNotification(content);
+            //the NotificationManager to replace the existing notification using the same notification id.
+            NotificationManager notificationManager = (NotificationManager)GetSystemService(Context.NotificationService);
+            notificationManager.Notify(NotificationID, notification);
+        }
+
     }
 }
